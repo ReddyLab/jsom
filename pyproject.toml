@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jsom"
+version = "0.1.0"
+description = "Expect script for connecting to Jupyter notebooks on SOM-HPC"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {file = "LICENSE"}
+authors = [
+    {name = "Thomas Cowart", email = "thomas.cowart@duke.edu"}
+]
+classifiers = [
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "License :: OSI Approved :: MIT License"
+]
+dependencies = [
+    "pexpect == 4.8.0",
+]
+
+[project.scripts]
+jsom = "jsom:run"
