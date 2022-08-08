@@ -6,7 +6,7 @@ clean:
 	-rm -rf jsom.egg-info build dist
 
 dist: $(PYTHON_FILES)
-	if [ -z $$(pip list | grep -e "^build\s") ]; then pip install build; fi
+	X=$$(pip list | grep -e "^build\s"); if [ $$(expr "$$X" : '.*') = 0 ]; then pip install build; fi
 	python -m build
 
 install: dist
