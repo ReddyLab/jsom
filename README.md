@@ -1,6 +1,6 @@
 
 # JSOM
-Expect script for connecting to Jupyter notebooks on SOM-HPC
+Expect script for connecting to Jupyter notebooks on DASH/SOM-HPC
 
 ### Install
 
