@@ -68,7 +68,14 @@ def connect_somhpc(address, username, pkey_file):
 
 def activate_conda(ssh, conda_env):
     ssh.sendline(f"conda activate {conda_env}")
-    ssh.prompt()
+    match = ssh.expect([ssh.PROMPT, "Could not find conda environment:"])
+    if match == 1:
+        raise Exception(f"Conda environment {conda_env} does not exist")
+
+    ssh.sendline("jupyter")
+    match = ssh.expect([ssh.PROMPT, "Command 'jupyter' not found"])
+    if match == 1:
+        raise Exception(f"Jupyter is not installed in conda environment {conda_env}")
     print(f'Activated "{conda_env}" conda environment')
 
 
@@ -189,11 +196,10 @@ def print_notebook_info(job_info):
 
 def expect(address, username, pkey_file, conda_env):
     defer = Defer()
-    ssh = connect_somhpc(address, username, pkey_file)
-
-    activate_conda(ssh, conda_env)
 
     try:
+        ssh = connect_somhpc(address, username, pkey_file)
+        activate_conda(ssh, conda_env)
         job_id = start_notebook(ssh, defer)
 
         job_info = start_local_tunnel(ssh, defer, job_id)
