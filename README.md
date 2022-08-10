@@ -12,6 +12,13 @@ cd jsom
 make install
 ```
 
+### Prerequisites
+
+* Python 3.8
+* Public key authentication set up for SOM-HPC
+
+This should work on Mac, may work on Linux, and probably doesn't work on Windows.
+
 ### Uninstall
 
 ```sh
