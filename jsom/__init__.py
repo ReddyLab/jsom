@@ -52,6 +52,13 @@ def parse_args():
         help="conda environment containing jupyter server to activate",
         required=True,
     )
+    parser.add_argument("-m", "--mem", help="Amount of memory allocated to jupyter job")
+    parser.add_argument(
+        "-t", "--time", help="Amount of time jupyter job will be allowed to run"
+    )
+    parser.add_argument(
+        "--cpus-per-task", help="Number of CPUs allocated to jupyter job"
+    )
 
     return parser.parse_args()
 
@@ -79,8 +86,21 @@ def activate_conda(ssh, conda_env):
     print(f'Activated "{conda_env}" conda environment')
 
 
-def start_notebook(ssh, defer):
-    ssh.sendline("sbatch /data/shared/jobs/jupyter-notebook.job")
+def build_notebook_sbatch(args):
+    opts = " "
+
+    if args.mem is not None:
+        opts += f"--mem={args.mem} "
+    if args.time is not None:
+        opts += f"--time={args.time} "
+    if args.cpus_per_task is not None:
+        opts += f"--cpus-per-task={args.cpus_per_task} "
+
+    return f"sbatch{opts}/data/shared/jobs/jupyter-notebook.job"
+
+
+def start_notebook(ssh, args, defer):
+    ssh.sendline(build_notebook_sbatch(args))
     ssh.expect(re.compile(r"Submitted batch job (\d+)\r\n"))
     job_id = ssh.match[1]
     ssh.prompt()
@@ -165,11 +185,20 @@ def start_somhpc_tunnel(ssh, defer, job_info):
         hpc_pass = getpass.getpass("Password: ")
         ssh.sendline(hpc_pass)
 
-        result = ssh.expect(["Permission denied, please try again\.", "Permission denied \(", pexpect.TIMEOUT], timeout=5)
+        result = ssh.expect(
+            [
+                "Permission denied, please try again\.",
+                "Permission denied \(",
+                pexpect.TIMEOUT,
+            ],
+            timeout=5,
+        )
         if result == 0:
             print("Permission denied, please try again.")
         elif result == 1:
-            raise Exception("Incorrect password for somhpc tunnel. Permission denied; exiting.")
+            raise Exception(
+                "Incorrect password for somhpc tunnel. Permission denied; exiting."
+            )
         elif result == 2:
             break
 
@@ -194,13 +223,13 @@ def print_notebook_info(job_info):
     print("****************************")
 
 
-def expect(address, username, pkey_file, conda_env):
+def expect(address, username, pkey_file, conda_env, args):
     defer = Defer()
 
     try:
         ssh = connect_somhpc(address, username, pkey_file)
         activate_conda(ssh, conda_env)
-        job_id = start_notebook(ssh, defer)
+        job_id = start_notebook(ssh, args, defer)
 
         job_info = start_local_tunnel(ssh, defer, job_id)
         start_interactive_session(ssh, defer, job_info)
@@ -226,4 +255,4 @@ def expect(address, username, pkey_file, conda_env):
 def run():
     args = parse_args()
 
-    expect(args.address, args.username, args.key, args.conda)
+    expect(args.address, args.username, args.key, args.conda, args)

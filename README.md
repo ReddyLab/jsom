@@ -24,3 +24,18 @@ This should work on Mac, may work on Linux, and probably doesn't work on Windows
 ```sh
 make uninstall
 ```
+
+### Usage
+
+    jsom [-h] -a ADDRESS -u USERNAME -k KEY -c CONDA [-m MEM] [-t TIME] [--cpus-per-task CPUS_PER_TASK]
+
+### Options
+
+    -h, --help                       show this help message and exit
+    -a ADDRESS, --address ADDRESS    address of ssh server
+    -u USERNAME, --username USERNAME ssh username
+    -k KEY, --key KEY                private key file to use
+    -c CONDA, --conda CONDA          conda environment containing jupyter server to activate
+    -m MEM, --mem MEM                Amount of memory allocated to jupyter job
+    -t TIME, --time TIME             Amount of time jupyter job will be allowed to run
+    --cpus-per-task CPUS_PER_TASK    Number of CPUs allocated to jupyter job

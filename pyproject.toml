@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "jsom"
-version = "0.1.0"
+version = "0.2.0"
 description = "Expect script for connecting to Jupyter notebooks on SOM-HPC"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -15,6 +15,7 @@ authors = [
 classifiers = [
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
     "License :: OSI Approved :: MIT License"
 ]
 dependencies = [
