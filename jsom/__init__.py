@@ -1,6 +1,7 @@
 import argparse
 import getpass
 import re
+import sys
 import time
 
 import pexpect
@@ -43,7 +44,7 @@ def parse_args():
     )
 
     parser.add_argument("-a", "--address", help="address of ssh server", required=True)
-    parser.add_argument("-u", "--username", help="ssh username", required=True)
+    parser.add_argument("-u", "--username", help="SSH username", required=True)
     parser.add_argument("-k", "--key", help="private key file to use", required=True)
     parser.add_argument(
         "-c",
@@ -52,20 +53,27 @@ def parse_args():
         help="conda environment containing jupyter server to activate",
         required=True,
     )
-    parser.add_argument("-m", "--mem", help="Amount of memory allocated to jupyter job")
     parser.add_argument(
-        "-t", "--time", help="Amount of time jupyter job will be allowed to run"
+        "-d", "--debug", help="echo all output to stdout", action="store_true"
+    )
+    parser.add_argument("-m", "--mem", help="amount of memory allocated to jupyter job")
+    parser.add_argument(
+        "-t", "--time", help="amount of time jupyter job will be allowed to run"
     )
     parser.add_argument(
-        "--cpus-per-task", help="Number of CPUs allocated to jupyter job"
+        "--cpus-per-task", help="number of CPUs allocated to jupyter job"
     )
 
     return parser.parse_args()
 
 
-def connect_somhpc(address, username, pkey_file):
+def connect_somhpc(address, username, pkey_file, args):
     print(f"Connecting to {username}@{address}")
     ssh = pxssh.pxssh(encoding="utf-8", options={"StrictHostKeyChecking": "no"})
+
+    if args.debug:
+        ssh.logfile = sys.stdout
+
     ssh.login(
         server=address, username=username, ssh_key=pkey_file, sync_original_prompt=False
     )
@@ -75,8 +83,10 @@ def connect_somhpc(address, username, pkey_file):
 
 def activate_conda(ssh, conda_env):
     ssh.sendline(f"conda activate {conda_env}")
-    match = ssh.expect([ssh.PROMPT, "Could not find conda environment:", "Not a conda environment:"])
-    if match > 0 :
+    match = ssh.expect(
+        [ssh.PROMPT, "Could not find conda environment:", "Not a conda environment:"]
+    )
+    if match > 0:
         raise Exception(f"Conda environment {conda_env} does not exist")
 
     ssh.sendline("jupyter")
@@ -119,7 +129,7 @@ def start_notebook(ssh, args, defer):
     return job_id
 
 
-def start_local_tunnel(ssh, defer, job_id):
+def start_local_tunnel(ssh, args, defer, job_id):
     job_info = ""
 
     # It might take a little bit for the notebook job to start, so
@@ -132,6 +142,10 @@ def start_local_tunnel(ssh, defer, job_id):
 
     local_tunnel = local_tunnel[0].strip()
     p = pexpect.spawn(local_tunnel, encoding="utf-8")
+
+    if args.debug:
+        p.logfile = sys.stdout
+
     print(f"Launched local ssh tunnel: {local_tunnel}")
     lt = p.expect(
         [
@@ -227,11 +241,11 @@ def expect(address, username, pkey_file, conda_env, args):
     defer = Defer()
 
     try:
-        ssh = connect_somhpc(address, username, pkey_file)
+        ssh = connect_somhpc(address, username, pkey_file, args)
         activate_conda(ssh, conda_env)
         job_id = start_notebook(ssh, args, defer)
 
-        job_info = start_local_tunnel(ssh, defer, job_id)
+        job_info = start_local_tunnel(ssh, args, defer, job_id)
         start_interactive_session(ssh, defer, job_info)
         start_somhpc_tunnel(ssh, defer, job_info)
 

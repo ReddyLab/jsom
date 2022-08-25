@@ -36,6 +36,7 @@ make uninstall
     -u USERNAME, --username USERNAME ssh username
     -k KEY, --key KEY                private key file to use
     -c CONDA, --conda CONDA          conda environment containing jupyter server to activate
-    -m MEM, --mem MEM                Amount of memory allocated to jupyter job
-    -t TIME, --time TIME             Amount of time jupyter job will be allowed to run
-    --cpus-per-task CPUS_PER_TASK    Number of CPUs allocated to jupyter job
+    -d, --debug                      echo all output to stdout
+    -m MEM, --mem MEM                amount of memory allocated to jupyter job
+    -t TIME, --time TIME             amount of time jupyter job will be allowed to run
+    --cpus-per-task CPUS_PER_TASK    number of CPUs allocated to jupyter job
