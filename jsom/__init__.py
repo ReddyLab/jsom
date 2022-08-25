@@ -75,8 +75,8 @@ def connect_somhpc(address, username, pkey_file):
 
 def activate_conda(ssh, conda_env):
     ssh.sendline(f"conda activate {conda_env}")
-    match = ssh.expect([ssh.PROMPT, "Could not find conda environment:"])
-    if match == 1:
+    match = ssh.expect([ssh.PROMPT, "Could not find conda environment:", "Not a conda environment:"])
+    if match > 0 :
         raise Exception(f"Conda environment {conda_env} does not exist")
 
     ssh.sendline("jupyter")
